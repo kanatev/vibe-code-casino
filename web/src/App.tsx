@@ -90,7 +90,9 @@ export default function App() {
             </div>
           </div>
 
-          {tab === 'play' ? (
+          {/* Both tabs stay mounted (toggled via CSS) so in-flight rolls and
+              form state survive switching between Play and Provably Fair. */}
+          <div className={tab === 'play' ? '' : 'hidden'}>
             <div className="grid grid-2">
               <DiceGame
                 casinoBalance={casino.casinoBalance}
@@ -115,9 +117,10 @@ export default function App() {
                 />
               </div>
             </div>
-          ) : (
+          </div>
+          <div className={tab === 'fair' ? '' : 'hidden'}>
             <ProvablyFair />
-          )}
+          </div>
 
           <footer className="footer">
             House bankroll: <strong>{fmt(casino.houseBankroll)} {TOKEN_SYMBOL}</strong> · Flat 1% edge ·
