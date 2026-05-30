@@ -1,8 +1,7 @@
 import { createConfig } from 'wagmi'
 import { fallback, http } from 'viem'
 import { sepolia } from 'wagmi/chains'
-import { getDefaultConfig, connectorsForWallets } from '@rainbow-me/rainbowkit'
-import { injectedWallet } from '@rainbow-me/rainbowkit/wallets'
+import { injected } from 'wagmi/connectors'
 
 // Resilient transport: try the configured / primary RPC first, then fall back to
 // other public Sepolia endpoints. Public nodes intermittently drop connections
@@ -19,26 +18,13 @@ const transport = fallback(
   { rank: false },
 )
 
-// A real WalletConnect projectId unlocks the full wallet list (mobile via QR).
-// Get one (free) at https://cloud.reown.com. Without it we fall back to an
-// injected-only setup so MetaMask works with zero external dependency — the
-// WalletConnect relay is never initialized, so no "invalid key" socket errors.
-const WC_PROJECT_ID = import.meta.env.VITE_WC_PROJECT_ID || ''
-
-export const wagmiConfig = WC_PROJECT_ID
-  ? getDefaultConfig({
-      appName: 'Vibe Casino',
-      projectId: WC_PROJECT_ID,
-      chains: [sepolia],
-      transports: { [sepolia.id]: transport },
-      ssr: false,
-    })
-  : createConfig({
-      chains: [sepolia],
-      connectors: connectorsForWallets(
-        [{ groupName: 'Installed', wallets: [injectedWallet] }],
-        { appName: 'Vibe Casino', projectId: 'INJECTED_ONLY' },
-      ),
-      transports: { [sepolia.id]: transport },
-      ssr: false,
-    })
+// Injected-only setup (MetaMask / any browser wallet). No WalletConnect, so no
+// relay/projectId dependency and none of its console noise. The connect UI is a
+// custom WalletButton that links to the MetaMask install page when no wallet is
+// detected. (If mobile/QR wallets are wanted later, reintroduce WalletConnect.)
+export const wagmiConfig = createConfig({
+  chains: [sepolia],
+  connectors: [injected({ shimDisconnect: true })],
+  transports: { [sepolia.id]: transport },
+  ssr: false,
+})

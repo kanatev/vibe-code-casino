@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAccount } from 'wagmi'
-import { ConnectButton } from '@rainbow-me/rainbowkit'
+import { WalletButton } from './components/WalletButton'
+import { InstallWalletModal } from './components/InstallWalletModal'
 import { useCasino } from './hooks/useCasino'
 import { Faucet } from './components/Faucet'
 import { Bank } from './components/Bank'
@@ -14,10 +15,13 @@ type Tab = 'play' | 'fair'
 export default function App() {
   const { isConnected } = useAccount()
   const [tab, setTab] = useState<Tab>('play')
+  const [installOpen, setInstallOpen] = useState(false)
   const casino = useCasino()
+  const openInstall = () => setInstallOpen(true)
 
   return (
     <div className="app">
+      <InstallWalletModal open={installOpen} onClose={() => setInstallOpen(false)} />
       <header className="topbar">
         <div className="brand">
           <span className="logo">🎲</span>
@@ -38,14 +42,14 @@ export default function App() {
               </div>
             </div>
           )}
-          <ConnectButton accountStatus="avatar" chainStatus="icon" showBalance={false} />
+          <WalletButton onInstall={openInstall} />
         </div>
       </header>
 
       {!isConfigured ? (
         <NotConfigured />
       ) : !isConnected ? (
-        <Landing />
+        <Landing onInstall={openInstall} />
       ) : (
         <>
           <div className="center" style={{ marginBottom: 22 }}>
@@ -95,7 +99,7 @@ export default function App() {
   )
 }
 
-function Landing() {
+function Landing({ onInstall }: { onInstall: () => void }) {
   return (
     <div className="hero">
       <h1 className="hero-title">
@@ -106,7 +110,7 @@ function Landing() {
         every payout is verifiable on Etherscan. Connect a wallet, grab free test chips, and play.
       </p>
       <div className="hero-cta">
-        <ConnectButton label="Connect wallet to play" />
+        <WalletButton onInstall={onInstall} />
       </div>
       <div className="hero-steps">
         <div className="hero-step"><span>1</span> Claim free {TOKEN_SYMBOL} from the faucet</div>

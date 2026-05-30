@@ -515,3 +515,89 @@ input {
   line-height: 1.6;
 }
 .footer strong { color: var(--text); }
+
+/* ---------- wallet button ---------- */
+.wallet-account { position: relative; }
+.wallet-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--panel-border-strong);
+  background: var(--bg-2);
+}
+.wallet-pill:hover { border-color: var(--mint-dim); }
+.wallet-avatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+}
+.wallet-caret { font-size: 10px; color: var(--text-dim); }
+.wallet-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 180px;
+  background: var(--bg-2);
+  border: 1px solid var(--panel-border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.7);
+  padding: 6px;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.wallet-menu button {
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: var(--text-h);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+.wallet-menu button:hover { background: var(--bg-3); }
+.wallet-menu button.danger { color: var(--red); }
+.wallet-menu button.danger:hover { background: rgba(255, 93, 108, 0.12); }
+
+/* ---------- modal ---------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 7, 12, 0.7);
+  backdrop-filter: blur(4px);
+  display: grid;
+  place-items: center;
+  z-index: 100;
+  padding: 20px;
+}
+.modal {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  background: var(--bg-1);
+  border: 1px solid var(--panel-border-strong);
+  border-radius: var(--radius);
+  padding: 32px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  box-shadow: 0 32px 64px -24px rgba(0, 0, 0, 0.8);
+}
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 16px;
+  line-height: 1;
+  padding: 6px;
+}
+.modal-close:hover { color: var(--text-h); }

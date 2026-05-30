@@ -14,7 +14,7 @@ nor the developer can predict or tamper with a roll.
 
 | | |
 |---|---|
-| **Frontend** | _deploy URL goes here_ |
+| **Frontend** | **[vibe-code-casino.vercel.app](https://vibe-code-casino.vercel.app/)** |
 | **Casino contract** | [`0xaAc22207…47d59`](https://sepolia.etherscan.io/address/0xaAc22207FcF183A34aBB7e87A179290411047d59#code) — verified |
 | **Chip token (VCHIP)** | [`0x963d9C56…BC0EB`](https://sepolia.etherscan.io/address/0x963d9C56A38fA03f84c9dBD0319D232786dBC0EB#code) — verified |
 | **VRF subscription** | [vrf.chain.link/sepolia](https://vrf.chain.link/sepolia) |
