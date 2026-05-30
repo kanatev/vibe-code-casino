@@ -6,9 +6,10 @@ type Props = {
   walletBalance?: bigint
   cooldown?: bigint
   onDone: () => void
+  ensureSepolia: () => boolean
 }
 
-export function Faucet({ walletBalance, cooldown, onDone }: Props) {
+export function Faucet({ walletBalance, cooldown, onDone, ensureSepolia }: Props) {
   const { run, pending, error } = useAction()
   const onCooldown = cooldown !== undefined && cooldown > 0n
 
@@ -33,7 +34,7 @@ export function Faucet({ walletBalance, cooldown, onDone }: Props) {
       <button
         className="btn btn-primary btn-block"
         disabled={pending || onCooldown}
-        onClick={() => run({ ...chipContract, functionName: 'faucet' }, onDone)}
+        onClick={() => ensureSepolia() && run({ ...chipContract, functionName: 'faucet' }, onDone)}
       >
         {pending ? (
           <span className="row gap-sm" style={{ justifyContent: 'center' }}>

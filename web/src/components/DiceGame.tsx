@@ -29,6 +29,7 @@ type Props = {
   houseBankroll?: bigint
   pendingRequestId?: bigint
   onDone: () => void
+  ensureSepolia: () => boolean
 }
 
 const HOUSE_NUM = 100n * 9900n // 990000 = 100 * (BPS - edge)
@@ -41,7 +42,7 @@ function bankrollMaxBet(bankroll: bigint, rollUnder: number): bigint {
   return (bankroll * den) / perUnit
 }
 
-export function DiceGame({ casinoBalance, houseBankroll, pendingRequestId, onDone }: Props) {
+export function DiceGame({ casinoBalance, houseBankroll, pendingRequestId, onDone, ensureSepolia }: Props) {
   const [rollUnder, setRollUnder] = useState(50)
   const [amount, setAmount] = useState('')
   const [phase, setPhase] = useState<Phase>('idle')
@@ -113,6 +114,7 @@ export function DiceGame({ casinoBalance, houseBankroll, pendingRequestId, onDon
 
   async function roll() {
     if (wei === null || overMax) return
+    if (!ensureSepolia()) return
     setError(null)
     setSettlement(null)
     setPhase('placing')

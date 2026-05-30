@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
+import { sepolia } from 'wagmi/chains'
 import { WalletButton } from './components/WalletButton'
 import { InstallWalletModal } from './components/InstallWalletModal'
+import { SwitchNetworkModal } from './components/SwitchNetworkModal'
 import { useCasino } from './hooks/useCasino'
 import { Faucet } from './components/Faucet'
 import { Bank } from './components/Bank'
@@ -13,15 +15,40 @@ import { fmt } from './lib/format'
 type Tab = 'play' | 'fair'
 
 export default function App() {
-  const { isConnected } = useAccount()
+  const { isConnected, chainId } = useAccount()
   const [tab, setTab] = useState<Tab>('play')
   const [installOpen, setInstallOpen] = useState(false)
+  const [switchOpen, setSwitchOpen] = useState(false)
   const casino = useCasino()
   const openInstall = () => setInstallOpen(true)
+
+  // The MetaMask extension does not inject into an already-open tab, so after the
+  // user installs it and returns, reload once to pick up window.ethereum.
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === 'visible' && sessionStorage.getItem('vibe-mm-installing') === '1') {
+        sessionStorage.removeItem('vibe-mm-installing')
+        window.location.reload()
+      }
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [])
+
+  // Guard every transaction: if connected to the wrong network, prompt a switch
+  // instead of letting the wallet sign on the wrong chain. Returns false if blocked.
+  const ensureSepolia = (): boolean => {
+    if (isConnected && chainId !== sepolia.id) {
+      setSwitchOpen(true)
+      return false
+    }
+    return true
+  }
 
   return (
     <div className="app">
       <InstallWalletModal open={installOpen} onClose={() => setInstallOpen(false)} />
+      <SwitchNetworkModal open={switchOpen} onClose={() => setSwitchOpen(false)} />
       <header className="topbar">
         <div className="brand">
           <span className="logo">🎲</span>
@@ -70,18 +97,21 @@ export default function App() {
                 houseBankroll={casino.houseBankroll}
                 pendingRequestId={casino.pendingRequestId}
                 onDone={casino.refetch}
+                ensureSepolia={ensureSepolia}
               />
               <div className="col gap">
                 <Faucet
                   walletBalance={casino.walletBalance}
                   cooldown={casino.faucetCooldown}
                   onDone={casino.refetch}
+                  ensureSepolia={ensureSepolia}
                 />
                 <Bank
                   walletBalance={casino.walletBalance}
                   casinoBalance={casino.casinoBalance}
                   allowance={casino.allowance}
                   onDone={casino.refetch}
+                  ensureSepolia={ensureSepolia}
                 />
               </div>
             </div>

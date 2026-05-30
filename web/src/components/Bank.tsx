@@ -10,9 +10,10 @@ type Props = {
   casinoBalance?: bigint
   allowance?: bigint
   onDone: () => void
+  ensureSepolia: () => boolean
 }
 
-export function Bank({ walletBalance, casinoBalance, allowance, onDone }: Props) {
+export function Bank({ walletBalance, casinoBalance, allowance, onDone, ensureSepolia }: Props) {
   const [mode, setMode] = useState<'deposit' | 'withdraw'>('deposit')
   const [amount, setAmount] = useState('')
   const { run, pending, error } = useAction()
@@ -61,6 +62,7 @@ export function Bank({ walletBalance, casinoBalance, allowance, onDone }: Props)
           className="btn btn-primary btn-block"
           disabled={pending || overMax}
           onClick={() =>
+            ensureSepolia() &&
             run({ ...chipContract, functionName: 'approve', args: [CASINO_ADDRESS, maxUint256] }, onDone)
           }
         >
@@ -77,7 +79,7 @@ export function Bank({ walletBalance, casinoBalance, allowance, onDone }: Props)
           className="btn btn-primary btn-block"
           disabled={pending || wei === null || overMax}
           onClick={() =>
-            run({ ...casinoContract, functionName: mode, args: [wei!] }, done)
+            ensureSepolia() && run({ ...casinoContract, functionName: mode, args: [wei!] }, done)
           }
         >
           {pending ? (
