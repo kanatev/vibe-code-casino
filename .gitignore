@@ -141,3 +141,15 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# --- Foundry (contracts/) ---
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+# адреса деплоя выносим в README / web/.env.example, broadcast не трекаем
+
+# --- Vercel ---
+.vercel/
+
+# --- macOS ---
+.DS_Store
