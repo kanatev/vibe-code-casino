@@ -62,9 +62,11 @@ export function DiceGame({ casinoBalance, houseBankroll, pendingRequestId, onDon
   const payout = wei && wei > 0n ? quotePayout(wei, rollUnder) : 0n
   const busy = phase === 'placing' || phase === 'rolling'
 
-  // Spin the displayed number while waiting for randomness.
+  // Spin the displayed number while waiting for randomness. Only once the bet is
+  // placed on-chain ('rolling') — not during 'placing', when we're still waiting
+  // for the user to sign and the tx to mine.
   useEffect(() => {
-    if (phase === 'rolling' || phase === 'placing') {
+    if (phase === 'rolling') {
       tickRef.current = setInterval(() => setDisplay(Math.floor(Math.random() * 100)), 70)
     } else if (tickRef.current) {
       clearInterval(tickRef.current)
@@ -159,7 +161,13 @@ export function DiceGame({ casinoBalance, houseBankroll, pendingRequestId, onDon
         <div className={`dice-tile ${tileClass} ${phase === 'won' || phase === 'lost' ? 'pop' : ''}`}>
           <span className="dice-num">{display.toString().padStart(2, '0')}</span>
           <span className="dice-cap">
-            {busy ? 'rolling…' : phase === 'won' ? 'WIN' : phase === 'lost' ? 'LOSE' : `roll under ${rollUnder}`}
+            {phase === 'rolling'
+              ? 'rolling…'
+              : phase === 'won'
+                ? 'WIN'
+                : phase === 'lost'
+                  ? 'LOSE'
+                  : `roll under ${rollUnder}`}
           </span>
         </div>
         {phase === 'won' && settlement && (
@@ -177,6 +185,13 @@ export function DiceGame({ casinoBalance, houseBankroll, pendingRequestId, onDon
             {phase === 'placing'
               ? 'Confirm in your wallet…'
               : 'Waiting for Chainlink VRF to deliver a verifiable random number on-chain…'}
+          </p>
+        )}
+        {/* Base caption so idle reserves the same vertical space as the other
+            phases — keeps the block from jumping in size between states. */}
+        {phase === 'idle' && (
+          <p className="muted center" style={{ fontSize: 13 }}>
+            Place your bet.
           </p>
         )}
       </div>
@@ -231,11 +246,15 @@ export function DiceGame({ casinoBalance, houseBankroll, pendingRequestId, onDon
         )}
       </button>
 
-      {settlement?.txHash && (
-        <a className="center" style={{ fontSize: 12 }} href={explorerTx(settlement.txHash)} target="_blank" rel="noreferrer">
-          View bet transaction ↗
-        </a>
-      )}
+      {/* Always reserve the link's line so the block doesn't grow when a bet
+          settles and the link appears (18px = one 12px line at body's 1.5). */}
+      <div className="center" style={{ fontSize: 12, minHeight: 18 }}>
+        {settlement?.txHash && (
+          <a href={explorerTx(settlement.txHash)} target="_blank" rel="noreferrer">
+            View bet transaction ↗
+          </a>
+        )}
+      </div>
       {error && <div className="notice warn">⏳ {error}</div>}
     </div>
   )
