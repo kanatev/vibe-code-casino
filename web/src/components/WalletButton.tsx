@@ -24,13 +24,6 @@ function useInjectedPresent(): boolean {
   return present
 }
 
-/** Deterministic gradient avatar from an address. */
-function avatarStyle(address?: string): React.CSSProperties {
-  const seed = address ? parseInt(address.slice(2, 8), 16) : 0
-  const h = seed % 360
-  return { background: `linear-gradient(135deg, hsl(${h} 70% 55%), hsl(${(h + 60) % 360} 70% 45%))` }
-}
-
 export function WalletButton({ onInstall }: { onInstall: () => void }) {
   const { address, isConnected, chainId } = useAccount()
   const { connectors, connect, isPending, error } = useConnect()
@@ -111,12 +104,12 @@ export function WalletButton({ onInstall }: { onInstall: () => void }) {
   return (
     <div className="wallet-account" ref={menuRef}>
       <button className="btn btn-ghost wallet-pill" onClick={() => setMenuOpen((o) => !o)}>
-        <span className="wallet-avatar" style={avatarStyle(address)} />
-        <span className="mono">{shortAddr(address)}</span>
+        <span className="wallet-emoji" aria-hidden>😎</span>
         <span className="wallet-caret">▾</span>
       </button>
       {menuOpen && (
         <div className="wallet-menu">
+          <div className="wallet-addr mono">{shortAddr(address)}</div>
           <button onClick={copyAddress}>{copied ? '✓ Copied!' : 'Copy address'}</button>
           <button
             className="danger"

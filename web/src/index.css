@@ -618,23 +618,30 @@ input {
 .footer strong { color: var(--text); }
 
 /* ---------- wallet button ---------- */
+/* Match the In casino / In wallet chips' height: let the header row stretch its
+   items and have the pill fill that height. */
+.topbar > .row { align-items: stretch; }
 .wallet-account { position: relative; }
 .wallet-pill {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  height: 100%;
   border: 1px solid var(--panel-border-strong);
   background: var(--bg-2);
 }
 .wallet-pill:hover { border-color: var(--mint-dim); }
-.wallet-avatar {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+.wallet-emoji { font-size: 22px; line-height: 1; }
+.wallet-caret { font-size: 20px; color: var(--text-dim); line-height: 1; }
+.wallet-addr {
+  padding: 8px 12px 6px;
+  font-size: 12px;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--panel-border);
+  margin-bottom: 2px;
+  user-select: text;
 }
-.wallet-caret { font-size: 10px; color: var(--text-dim); }
 .wallet-menu {
   position: absolute;
   top: calc(100% + 8px);
