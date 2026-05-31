@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { parseEventLogs } from 'viem'
 import { useWriteContract, usePublicClient } from 'wagmi'
 import { AmountInput } from './AmountInput'
+import { DiceShape } from './DiceShape'
 import {
   casinoContract,
   casinoDiceAbi,
@@ -160,42 +161,44 @@ export function DiceGame({ casinoBalance, houseBankroll, pendingRequestId, onDon
 
       {/* Result tile */}
       <div className="dice-stage">
-        <div className={`dice-tile ${tileClass} ${phase === 'won' || phase === 'lost' ? 'pop' : ''}`}>
+        <div className="dice-tile">
+          <DiceShape
+            className={`${tileClass} ${phase === 'rolling' ? 'spin-d20' : ''} ${
+              phase === 'won' || phase === 'lost' ? 'pop' : ''
+            }`}
+          />
           <span className="dice-num">{display.toString().padStart(2, '0')}</span>
-          <span className="dice-cap">
-            {phase === 'rolling'
-              ? 'rolling…'
-              : phase === 'won'
-                ? 'WIN'
-                : phase === 'lost'
-                  ? 'LOSE'
-                  : `roll under ${rollUnder}`}
-          </span>
         </div>
-        {phase === 'won' && settlement && (
-          <p className="result-line win">
-            🎉 {display} &lt; {settlement.rollUnder} — you won {fmt(settlement.payout)} {TOKEN_SYMBOL}!
-          </p>
-        )}
-        {phase === 'lost' && settlement && (
-          <p className="result-line lose">
-            {display} ≥ {settlement.rollUnder} — house wins this one.
-          </p>
-        )}
-        {busy && (
-          <p className="muted center" style={{ fontSize: 13 }}>
-            {phase === 'placing'
-              ? 'Confirm in your wallet…'
-              : 'Waiting for Chainlink VRF to deliver a verifiable random number on-chain…'}
-          </p>
-        )}
-        {/* Base caption so idle reserves the same vertical space as the other
-            phases — keeps the block from jumping in size between states. */}
-        {phase === 'idle' && (
-          <p className="muted center" style={{ fontSize: 13 }}>
-            Place your bet.
-          </p>
-        )}
+        <span className="dice-cap">
+          {phase === 'rolling'
+            ? 'rolling…'
+            : phase === 'won'
+              ? 'WIN'
+              : phase === 'lost'
+                ? 'LOSE'
+                : `roll under ${rollUnder}`}
+        </span>
+        {/* One fixed-height message slot for every phase — same font size and a
+            reserved height so the block never changes size between states. */}
+        <div className="dice-msg">
+          {phase === 'won' && settlement ? (
+            <span className="result-line win">
+              🎉 {display} &lt; {settlement.rollUnder} — you won {fmt(settlement.payout)} {TOKEN_SYMBOL}!
+            </span>
+          ) : phase === 'lost' && settlement ? (
+            <span className="result-line lose">
+              {display} ≥ {settlement.rollUnder} — house wins this one.
+            </span>
+          ) : busy ? (
+            <span className="muted">
+              {phase === 'placing'
+                ? 'Confirm in your wallet…'
+                : 'Waiting for Chainlink VRF to deliver a verifiable random number on-chain…'}
+            </span>
+          ) : (
+            <span className="muted">Place your bet.</span>
+          )}
+        </div>
       </div>
 
       {/* Target slider */}

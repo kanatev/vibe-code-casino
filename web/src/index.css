@@ -403,28 +403,68 @@ input {
   padding: 8px 0 4px;
 }
 .dice-tile {
+  position: relative;
   width: 150px;
-  height: 150px;
-  border-radius: 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  border: 1px solid var(--panel-border-strong);
-  background: var(--bg-1);
-  transition: box-shadow 0.3s, border-color 0.3s;
+  height: 130px;
+  display: grid;
+  place-items: center;
+  perspective: 700px; /* gives the d20 tumble real depth */
 }
-.dice-tile.neutral { box-shadow: inset 0 0 40px rgba(255,255,255,0.02); }
-.dice-tile.gold { border-color: rgba(245,196,81,0.5); box-shadow: 0 0 36px rgba(245,196,81,0.25); }
-.dice-tile.mint { border-color: var(--mint); box-shadow: 0 0 48px var(--mint-glow); }
-.dice-tile.red { border-color: var(--red); box-shadow: 0 0 40px rgba(255,93,108,0.3); }
+/* --- 3D d20 die: a 0-size pivot at the tile center; faces live in its 3D space --- */
+.d20 {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+  color: var(--panel-border-strong); /* facet edge stroke via currentColor */
+  transition: color 0.3s;
+}
+.d20-face {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100px;
+  height: 100px;
+  transform-origin: 0 0;
+  backface-visibility: hidden;
+  overflow: visible;
+}
+.d20-face polygon {
+  stroke: currentColor;
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.d20.neutral { color: var(--panel-border-strong); }
+.d20.gold { color: var(--gold); }
+.d20.mint { color: var(--mint); }
+.d20.red { color: var(--red); }
+@keyframes d20-tumble {
+  0%   { transform: rotateX(0deg)   rotateY(0deg)   rotateZ(0deg); }
+  25%  { transform: rotateX(140deg) rotateY(70deg)  rotateZ(30deg); }
+  50%  { transform: rotateX(210deg) rotateY(190deg) rotateZ(95deg); }
+  75%  { transform: rotateX(330deg) rotateY(280deg) rotateZ(150deg); }
+  100% { transform: rotateX(360deg) rotateY(360deg) rotateZ(180deg); }
+}
+.d20.spin-d20 { animation: d20-tumble 2.4s linear infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .d20.spin-d20 { animation: none; }
+}
 .dice-num {
+  position: relative;
+  z-index: 3;
   font-family: var(--mono);
-  font-size: 58px;
+  font-size: 44px;
   font-weight: 700;
   color: var(--text-h);
   line-height: 1;
+  transform: translateY(8px);
+  padding: 4px 14px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
 }
 .dice-cap {
   font-size: 12px;
@@ -433,7 +473,16 @@ input {
   text-transform: uppercase;
   color: var(--text-dim);
 }
-.result-line { font-weight: 650; font-size: 15px; }
+.dice-msg {
+  min-height: 20px; /* one line @ 13px — reserved so phases don't resize the block */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.result-line { font-weight: 650; }
 .result-line.win { color: var(--mint); }
 .result-line.lose { color: var(--red); }
 
