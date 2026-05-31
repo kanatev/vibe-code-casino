@@ -322,14 +322,17 @@ input {
 .pill.win { color: var(--mint); border-color: var(--mint-dim); background: var(--mint-glow); }
 .pill.lose { color: var(--red); border-color: var(--red-dim); background: rgba(255, 93, 108, 0.12); }
 .pill.pending { color: var(--gold); border-color: rgba(245, 196, 81, 0.4); background: rgba(245, 196, 81, 0.1); }
-/* Same as a .pill label, but green and clickable — jumps to Provably Fair. */
+/* Same as a .pill label, but green and clickable, with a soft green glow around
+   the border to hint it jumps to Provably Fair. */
 .pill.pill-link {
   color: var(--mint);
   background: transparent;
   font-family: inherit;
   cursor: pointer;
+  border: 1px solid var(--mint-dim);
+  box-shadow: 0 0 10px var(--mint-glow);
 }
-.pill.pill-link:hover { border-color: var(--mint-dim); }
+.pill.pill-link:hover { color: #5ef0c8; }
 
 .back-btn {
   display: inline-flex;
