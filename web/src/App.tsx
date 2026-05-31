@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import { useAccount } from 'wagmi'
 import { sepolia } from 'wagmi/chains'
 import { WalletButton } from './components/WalletButton'
@@ -23,6 +23,34 @@ export default function App() {
   const [approveOpen, setApproveOpen] = useState(false)
   const casino = useCasino()
   const openInstall = () => setInstallOpen(true)
+
+  // Collapse the header into "compact" mode (In casino / In wallet move into the
+  // wallet dropdown) the moment the one-line layout would overflow. A fixed CSS
+  // breakpoint can't do this reliably because the chips' width depends on the
+  // balance amounts, so we watch the actual overflow instead. `breakWidth`
+  // records the width at which it last broke, giving hysteresis so it doesn't
+  // flicker back and forth right at the threshold.
+  const [compact, setCompact] = useState(false)
+  const topbarRef = useRef<HTMLElement>(null)
+  const breakWidth = useRef(Number.POSITIVE_INFINITY)
+  useLayoutEffect(() => {
+    const el = topbarRef.current
+    if (!el) return
+    const measure = () => {
+      if (!compact) {
+        if (el.scrollWidth > el.clientWidth + 1) {
+          breakWidth.current = el.clientWidth
+          setCompact(true)
+        }
+      } else if (el.clientWidth > breakWidth.current + 24) {
+        setCompact(false)
+      }
+    }
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [compact, isConnected, casino.casinoBalance, casino.walletBalance])
 
   // The MetaMask extension does not inject into an already-open tab, so after the
   // user installs it and returns, reload once to pick up window.ethereum.
@@ -56,7 +84,7 @@ export default function App() {
         onClose={() => setApproveOpen(false)}
         onApproved={casino.refetch}
       />
-      <header className="topbar">
+      <header ref={topbarRef} className={`topbar ${compact ? 'is-compact' : ''}`}>
         <div className="brand">
           <span className="logo">🎲</span>
           Vibe Casino
@@ -76,7 +104,11 @@ export default function App() {
               </div>
             </div>
           )}
-          <WalletButton onInstall={openInstall} />
+          <WalletButton
+            onInstall={openInstall}
+            casinoBalance={casino.casinoBalance}
+            walletBalance={casino.walletBalance}
+          />
         </div>
       </header>
 

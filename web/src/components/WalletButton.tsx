@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAccount, useConnect, useDisconnect, useSwitchChain } from 'wagmi'
 import { sepolia } from 'wagmi/chains'
-import { shortAddr } from '../lib/format'
+import { shortAddr, fmt } from '../lib/format'
+import { TOKEN_SYMBOL } from '../config'
 import { useToast } from '../hooks/useToast'
 
 /** Detect an injected EIP-1193 provider (MetaMask et al). MetaMask injects
@@ -24,7 +25,13 @@ function useInjectedPresent(): boolean {
   return present
 }
 
-export function WalletButton({ onInstall }: { onInstall: () => void }) {
+type Props = {
+  onInstall: () => void
+  casinoBalance?: bigint
+  walletBalance?: bigint
+}
+
+export function WalletButton({ onInstall, casinoBalance, walletBalance }: Props) {
   const { address, isConnected, chainId } = useAccount()
   const { connectors, connect, isPending, error } = useConnect()
   const { disconnect } = useDisconnect()
@@ -110,6 +117,18 @@ export function WalletButton({ onInstall }: { onInstall: () => void }) {
       {menuOpen && (
         <div className="wallet-menu">
           <div className="wallet-addr mono">{shortAddr(address)}</div>
+          {/* Balances live here too; CSS reveals this block only on narrow
+              screens, where the inline header chips are hidden. */}
+          <div className="wallet-balances">
+            <div className="wallet-bal">
+              <span className="k">In casino</span>
+              <span className="v">{fmt(casinoBalance)} {TOKEN_SYMBOL}</span>
+            </div>
+            <div className="wallet-bal">
+              <span className="k">In wallet</span>
+              <span className="v">{fmt(walletBalance)} {TOKEN_SYMBOL}</span>
+            </div>
+          </div>
           <button onClick={copyAddress}>{copied ? '✓ Copied!' : 'Copy address'}</button>
           <button
             className="danger"
