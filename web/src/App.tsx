@@ -86,19 +86,9 @@ export default function App() {
         <Landing onInstall={openInstall} />
       ) : (
         <>
-          <div className="center" style={{ marginBottom: 22 }}>
-            <div className="tabs">
-              <button className={`tab ${tab === 'play' ? 'active' : ''}`} onClick={() => setTab('play')}>
-                🎲 Play
-              </button>
-              <button className={`tab ${tab === 'fair' ? 'active' : ''}`} onClick={() => setTab('fair')}>
-                🔍 Provably Fair
-              </button>
-            </div>
-          </div>
-
-          {/* Both tabs stay mounted (toggled via CSS) so in-flight rolls and
-              form state survive switching between Play and Provably Fair. */}
+          {/* No top switcher: navigation is via the "Provably fair" link in the
+              dice panel and the back arrow in Provably Fair. Both tabs stay
+              mounted (toggled via CSS) so in-flight rolls and form state survive. */}
           <div className={`tab-panel ${tab === 'play' ? '' : 'hidden'}`}>
             <div className="grid grid-2">
               <DiceGame
@@ -107,6 +97,7 @@ export default function App() {
                 pendingRequestId={casino.pendingRequestId}
                 onDone={casino.refetch}
                 ensureSepolia={ensureSepolia}
+                onOpenFair={() => setTab('fair')}
               />
               <div className="col gap side-col">
                 <Faucet
@@ -126,7 +117,7 @@ export default function App() {
             </div>
           </div>
           <div className={`tab-panel ${tab === 'fair' ? '' : 'hidden'}`}>
-            <ProvablyFair />
+            <ProvablyFair onBack={() => setTab('play')} />
           </div>
 
           <footer className="footer">

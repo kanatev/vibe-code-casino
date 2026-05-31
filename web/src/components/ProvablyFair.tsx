@@ -25,7 +25,7 @@ type Verified = {
   result: number
 }
 
-export function ProvablyFair() {
+export function ProvablyFair({ onBack }: { onBack: () => void }) {
   const publicClient = usePublicClient()
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -80,7 +80,10 @@ export function ProvablyFair() {
   return (
     <div className="col gap">
       <div className="panel panel-pad col gap">
-        <h3>🔍 Provably fair — don't trust, verify</h3>
+        <div className="row gap-sm" style={{ alignItems: 'center' }}>
+          <button className="back-btn" onClick={onBack} aria-label="Back to Play">←</button>
+          <h3>🔍 Provably fair — don't trust, verify</h3>
+        </div>
         <p className="muted" style={{ fontSize: 15, lineHeight: 1.6 }}>
           Every roll is decided by <strong>Chainlink VRF v2.5</strong>, a verifiable random
           function. The casino requests randomness, and the VRF coordinator delivers a number

@@ -32,6 +32,7 @@ type Props = {
   pendingRequestId?: bigint
   onDone: () => void
   ensureSepolia: () => boolean
+  onOpenFair: () => void
 }
 
 const HOUSE_NUM = 100n * 9900n // 990000 = 100 * (BPS - edge)
@@ -44,7 +45,7 @@ function bankrollMaxBet(bankroll: bigint, rollUnder: number): bigint {
   return (bankroll * den) / perUnit
 }
 
-export function DiceGame({ casinoBalance, houseBankroll, pendingRequestId, onDone, ensureSepolia }: Props) {
+export function DiceGame({ casinoBalance, houseBankroll, pendingRequestId, onDone, ensureSepolia, onOpenFair }: Props) {
   const [rollUnder, setRollUnder] = useState(50)
   const [amount, setAmount] = useState('')
   const [phase, setPhase] = useState<Phase>('idle')
@@ -156,7 +157,7 @@ export function DiceGame({ casinoBalance, houseBankroll, pendingRequestId, onDon
     <div className="panel panel-pad col gap">
       <div className="between">
         <h3>🎲 Roll the dice</h3>
-        <span className="pill">Provably fair · Chainlink VRF</span>
+        <button className="pill pill-link" onClick={onOpenFair}>Provably fair</button>
       </div>
 
       {/* Result tile */}
