@@ -92,7 +92,7 @@ export default function App() {
 
           {/* Both tabs stay mounted (toggled via CSS) so in-flight rolls and
               form state survive switching between Play and Provably Fair. */}
-          <div className={tab === 'play' ? '' : 'hidden'}>
+          <div className={`tab-panel ${tab === 'play' ? '' : 'hidden'}`}>
             <div className="grid grid-2">
               <DiceGame
                 casinoBalance={casino.casinoBalance}
@@ -117,7 +117,7 @@ export default function App() {
               </div>
             </div>
           </div>
-          <div className={tab === 'fair' ? '' : 'hidden'}>
+          <div className={`tab-panel ${tab === 'fair' ? '' : 'hidden'}`}>
             <ProvablyFair />
           </div>
 

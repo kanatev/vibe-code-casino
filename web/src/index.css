@@ -141,9 +141,21 @@ input {
 }
 @media (min-width: 880px) {
   .grid-2 { grid-template-columns: 1.4fr 1fr; align-items: stretch; }
+  /* Faucet & Bank panels keep a minimum width on desktop. */
+  .side-col .panel { min-width: 370px; }
   /* Right column fills the left block's height; the gap between the two
      stacked panels absorbs the difference so their bottoms align. */
   .grid-2 .side-col { justify-content: space-between; }
+}
+
+/* Stacked (mobile) mode: cap content to the dice panel's desktop max width
+   (~596px) and centre it, so stacked cards never get wider than that. */
+@media (max-width: 879.98px) {
+  .tab-panel { max-width: 596px; margin-inline: auto; }
+  /* Stacked: uniform 18px gap between all cards, not the desktop
+     space-between that aligns bottoms. (.tab-panel prefix raises specificity
+     so it beats the .gap utility class.) */
+  .tab-panel .side-col { justify-content: flex-start; gap: 18px; }
 }
 
 /* ---------- tabs ---------- */
