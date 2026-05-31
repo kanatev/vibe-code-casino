@@ -4,6 +4,7 @@ import { sepolia } from 'wagmi/chains'
 import { WalletButton } from './components/WalletButton'
 import { InstallWalletModal } from './components/InstallWalletModal'
 import { SwitchNetworkModal } from './components/SwitchNetworkModal'
+import { ApproveModal } from './components/ApproveModal'
 import { useCasino } from './hooks/useCasino'
 import { Faucet } from './components/Faucet'
 import { Bank } from './components/Bank'
@@ -19,6 +20,7 @@ export default function App() {
   const [tab, setTab] = useState<Tab>('play')
   const [installOpen, setInstallOpen] = useState(false)
   const [switchOpen, setSwitchOpen] = useState(false)
+  const [approveOpen, setApproveOpen] = useState(false)
   const casino = useCasino()
   const openInstall = () => setInstallOpen(true)
 
@@ -49,6 +51,11 @@ export default function App() {
     <div className="app">
       <InstallWalletModal open={installOpen} onClose={() => setInstallOpen(false)} />
       <SwitchNetworkModal open={switchOpen} onClose={() => setSwitchOpen(false)} />
+      <ApproveModal
+        open={approveOpen}
+        onClose={() => setApproveOpen(false)}
+        onApproved={casino.refetch}
+      />
       <header className="topbar">
         <div className="brand">
           <span className="logo">🎲</span>
@@ -113,6 +120,7 @@ export default function App() {
                   allowance={casino.allowance}
                   onDone={casino.refetch}
                   ensureSepolia={ensureSepolia}
+                  onNeedApproval={() => setApproveOpen(true)}
                 />
               </div>
             </div>

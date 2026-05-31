@@ -1,8 +1,7 @@
 import { useState } from 'react'
-import { maxUint256 } from 'viem'
 import { useAction } from '../hooks/useAction'
 import { AmountInput } from './AmountInput'
-import { casinoContract, chipContract, CASINO_ADDRESS, TOKEN_SYMBOL } from '../config'
+import { casinoContract } from '../config'
 import { parse } from '../lib/format'
 
 type Props = {
@@ -11,9 +10,10 @@ type Props = {
   allowance?: bigint
   onDone: () => void
   ensureSepolia: () => boolean
+  onNeedApproval: () => void
 }
 
-export function Bank({ walletBalance, casinoBalance, allowance, onDone, ensureSepolia }: Props) {
+export function Bank({ walletBalance, casinoBalance, allowance, onDone, ensureSepolia, onNeedApproval }: Props) {
   const [mode, setMode] = useState<'deposit' | 'withdraw'>('deposit')
   const [amount, setAmount] = useState('')
   const { run, pending, error } = useAction()
@@ -57,50 +57,30 @@ export function Bank({ walletBalance, casinoBalance, allowance, onDone, ensureSe
         disabled={pending}
       />
 
-      {needsApproval ? (
-        <button
-          className="btn btn-primary btn-block"
-          disabled={pending || overMax}
-          onClick={() =>
-            ensureSepolia() &&
-            run({ ...chipContract, functionName: 'approve', args: [CASINO_ADDRESS, maxUint256] }, onDone)
-          }
-        >
-          {pending ? (
-            <span className="row gap-sm" style={{ justifyContent: 'center' }}>
-              <span className="spin" /> Approving…
-            </span>
-          ) : (
-            `Approve ${TOKEN_SYMBOL}`
-          )}
-        </button>
-      ) : (
-        <button
-          className="btn btn-primary btn-block"
-          disabled={pending || wei === null || overMax}
-          onClick={() =>
-            ensureSepolia() && run({ ...casinoContract, functionName: mode, args: [wei!] }, done)
-          }
-        >
-          {pending ? (
-            <span className="row gap-sm" style={{ justifyContent: 'center' }}>
-              <span className="spin" /> {mode === 'deposit' ? 'Depositing…' : 'Withdrawing…'}
-            </span>
-          ) : overMax ? (
-            'Amount exceeds balance'
-          ) : mode === 'deposit' ? (
-            'Deposit'
-          ) : (
-            'Withdraw'
-          )}
-        </button>
-      )}
+      <button
+        className="btn btn-primary btn-block"
+        disabled={pending || wei === null || overMax}
+        onClick={() => {
+          if (!ensureSepolia()) return
+          // First deposit needs an ERC-20 allowance — prompt for it in a modal
+          // instead of depositing, then the user comes back and deposits.
+          if (needsApproval) return onNeedApproval()
+          run({ ...casinoContract, functionName: mode, args: [wei!] }, done)
+        }}
+      >
+        {pending ? (
+          <span className="row gap-sm" style={{ justifyContent: 'center' }}>
+            <span className="spin" /> {mode === 'deposit' ? 'Depositing…' : 'Withdrawing…'}
+          </span>
+        ) : overMax ? (
+          'Amount exceeds balance'
+        ) : mode === 'deposit' ? (
+          'Deposit'
+        ) : (
+          'Withdraw'
+        )}
+      </button>
 
-      {needsApproval && !pending && (
-        <p className="muted center" style={{ fontSize: 12 }}>
-          One-time approval lets the casino move your chips. You approve once, then deposit.
-        </p>
-      )}
       {error && <div className="notice error">⚠️ {error}</div>}
     </div>
   )
