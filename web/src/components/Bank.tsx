@@ -32,7 +32,7 @@ export function Bank({ walletBalance, casinoBalance, allowance, onDone, ensureSe
   return (
     <div className="panel panel-pad col gap">
       <div className="between">
-        <h3>2 · Bank</h3>
+        <h3>💰 Bank</h3>
         <div className="tabs">
           <button className={`tab ${mode === 'deposit' ? 'active' : ''}`} onClick={() => setMode('deposit')}>
             Deposit
@@ -43,7 +43,7 @@ export function Bank({ walletBalance, casinoBalance, allowance, onDone, ensureSe
         </div>
       </div>
 
-      <p className="muted" style={{ fontSize: 14 }}>
+      <p className="muted" style={{ fontSize: 14, lineHeight: 1.4, minHeight: '2.8em', margin: '12px 0' }}>
         {mode === 'deposit'
           ? 'Move chips from your wallet into the casino to play with them.'
           : 'Pull your casino balance back to your wallet any time.'}

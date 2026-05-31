@@ -101,9 +101,8 @@ export default function App() {
                 onDone={casino.refetch}
                 ensureSepolia={ensureSepolia}
               />
-              <div className="col gap">
+              <div className="col gap side-col">
                 <Faucet
-                  walletBalance={casino.walletBalance}
                   cooldown={casino.faucetCooldown}
                   onDone={casino.refetch}
                   ensureSepolia={ensureSepolia}

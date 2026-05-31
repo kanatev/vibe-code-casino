@@ -140,7 +140,10 @@ input {
   gap: 18px;
 }
 @media (min-width: 880px) {
-  .grid-2 { grid-template-columns: 1.4fr 1fr; align-items: start; }
+  .grid-2 { grid-template-columns: 1.4fr 1fr; align-items: stretch; }
+  /* Right column fills the left block's height; the gap between the two
+     stacked panels absorbs the difference so their bottoms align. */
+  .grid-2 .side-col { justify-content: space-between; }
 }
 
 /* ---------- tabs ---------- */
@@ -562,6 +565,43 @@ input {
 .wallet-menu button:hover { background: var(--bg-3); }
 .wallet-menu button.danger { color: var(--red); }
 .wallet-menu button.danger:hover { background: rgba(255, 93, 108, 0.12); }
+
+/* ---------- info tooltip ---------- */
+.info-wrap { position: relative; display: inline-flex; }
+.info-btn {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid var(--panel-border-strong);
+  background: var(--bg-3);
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 700;
+  font-style: italic;
+  font-family: var(--mono);
+  display: grid;
+  place-items: center;
+  line-height: 1;
+  padding: 0;
+}
+.info-btn:hover { color: var(--text-h); border-color: var(--mint-dim); }
+.info-bubble {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 230px;
+  background: var(--bg-2);
+  border: 1px solid var(--panel-border-strong);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--text);
+  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.7);
+  z-index: 40;
+}
 
 /* ---------- modal ---------- */
 .modal-overlay {
