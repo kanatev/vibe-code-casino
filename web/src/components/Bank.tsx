@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useAction } from '../hooks/useAction'
 import { AmountInput } from './AmountInput'
-import { casinoContract } from '../config'
+import { casinoContract, explorerTx } from '../config'
 import { parse } from '../lib/format'
 
 type Props = {
@@ -16,6 +16,11 @@ type Props = {
 export function Bank({ walletBalance, casinoBalance, allowance, onDone, ensureSepolia, onNeedApproval }: Props) {
   const [mode, setMode] = useState<'deposit' | 'withdraw'>('deposit')
   const [amount, setAmount] = useState('')
+  // The action in flight, tagged with the mode that started it (hash arrives once
+  // broadcast). Keeps the spinner/label and the tx link on their own tab — so
+  // peeking at the withdraw tab during a deposit shows a plain Withdraw button,
+  // not the deposit's loader. Cleared once mined.
+  const [active, setActive] = useState<{ mode: 'deposit' | 'withdraw'; hash?: `0x${string}` } | null>(null)
   const { run, pending, error } = useAction()
 
   const wei = parse(amount)
@@ -23,8 +28,10 @@ export function Bank({ walletBalance, casinoBalance, allowance, onDone, ensureSe
   const needsApproval =
     mode === 'deposit' && wei !== null && allowance !== undefined && allowance < wei
   const overMax = wei !== null && max !== undefined && wei > max
+  const runningHere = pending && active?.mode === mode
 
   function done() {
+    setActive(null)
     setAmount('')
     onDone()
   }
@@ -65,12 +72,20 @@ export function Bank({ walletBalance, casinoBalance, allowance, onDone, ensureSe
           // First deposit needs an ERC-20 allowance — prompt for it in a modal
           // instead of depositing, then the user comes back and deposits.
           if (needsApproval) return onNeedApproval()
-          run({ ...casinoContract, functionName: mode, args: [wei!] }, done)
+          setActive({ mode })
+          run({ ...casinoContract, functionName: mode, args: [wei!] }, done, (hash) =>
+            setActive({ mode, hash }),
+          )
         }}
       >
-        {pending ? (
+        {runningHere ? (
           <span className="row gap-sm" style={{ justifyContent: 'center' }}>
             <span className="spin" /> {mode === 'deposit' ? 'Depositing…' : 'Withdrawing…'}
+          </span>
+        ) : pending ? (
+          // The other tab's tx is in flight — show it's blocked until that settles.
+          <span className="row gap-sm" style={{ justifyContent: 'center' }}>
+            <span className="spin" /> Waiting…
           </span>
         ) : overMax ? (
           'Amount exceeds balance'
@@ -80,6 +95,16 @@ export function Bank({ walletBalance, casinoBalance, allowance, onDone, ensureSe
           'Withdraw'
         )}
       </button>
+
+      {/* Always reserve the link's line so the panel doesn't change height. The
+          link shows only while this tab's tx is in flight (18px = one 12px line). */}
+      <div className="center" style={{ fontSize: 12, minHeight: 18 }}>
+        {active?.hash && active.mode === mode && (
+          <a href={explorerTx(active.hash)} target="_blank" rel="noreferrer">
+            View transaction ↗
+          </a>
+        )}
+      </div>
 
       {error && <div className="notice error">⚠️ {error}</div>}
     </div>

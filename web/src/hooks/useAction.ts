@@ -30,11 +30,18 @@ export function useAction() {
   const [error, setError] = useState<string | null>(null)
 
   const run = useCallback(
-    async (params: WriteParams, onMined?: (hash: `0x${string}`) => void): Promise<`0x${string}` | null> => {
+    async (
+      params: WriteParams,
+      onMined?: (hash: `0x${string}`) => void,
+      // Fires as soon as the tx is signed and broadcast, before it's mined —
+      // lets callers surface an "in-flight" link while waiting.
+      onSubmitted?: (hash: `0x${string}`) => void,
+    ): Promise<`0x${string}` | null> => {
       setError(null)
       setPending(true)
       try {
         const hash = await writeContractAsync(params as never)
+        onSubmitted?.(hash)
         await publicClient!.waitForTransactionReceipt({ hash })
         onMined?.(hash)
         return hash
