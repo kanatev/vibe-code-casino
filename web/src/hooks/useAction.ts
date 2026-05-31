@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react'
 import { useWriteContract, usePublicClient } from 'wagmi'
 import type { Abi } from 'viem'
+import { useToast } from './useToast'
 
 type WriteParams = {
   address: `0x${string}`
@@ -22,12 +23,13 @@ function humanError(e: unknown): string {
   return msg.length > 140 ? msg.slice(0, 140) + '…' : msg
 }
 
-/** Send a contract write and wait for it to be mined. Tracks pending + error. */
+/** Send a contract write and wait for it to be mined. Tracks pending; surfaces
+ *  failures as a toast so panels don't resize. */
 export function useAction() {
   const { writeContractAsync } = useWriteContract()
   const publicClient = usePublicClient()
+  const notify = useToast()
   const [pending, setPending] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   const run = useCallback(
     async (
@@ -37,7 +39,6 @@ export function useAction() {
       // lets callers surface an "in-flight" link while waiting.
       onSubmitted?: (hash: `0x${string}`) => void,
     ): Promise<`0x${string}` | null> => {
-      setError(null)
       setPending(true)
       try {
         const hash = await writeContractAsync(params as never)
@@ -46,14 +47,14 @@ export function useAction() {
         onMined?.(hash)
         return hash
       } catch (e) {
-        setError(humanError(e))
+        notify(humanError(e), 'error')
         return null
       } finally {
         setPending(false)
       }
     },
-    [writeContractAsync, publicClient],
+    [writeContractAsync, publicClient, notify],
   )
 
-  return { run, pending, error, setError }
+  return { run, pending }
 }

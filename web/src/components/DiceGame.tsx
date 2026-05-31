@@ -13,6 +13,7 @@ import {
   explorerTx,
 } from '../config'
 import { fmt, parse } from '../lib/format'
+import { useToast } from '../hooks/useToast'
 
 type Phase = 'idle' | 'placing' | 'rolling' | 'won' | 'lost'
 
@@ -48,7 +49,7 @@ export function DiceGame({ casinoBalance, houseBankroll, pendingRequestId, onDon
   const [phase, setPhase] = useState<Phase>('idle')
   const [display, setDisplay] = useState(50)
   const [settlement, setSettlement] = useState<Settlement | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const notify = useToast()
 
   const { writeContractAsync } = useWriteContract()
   const publicClient = usePublicClient()
@@ -110,14 +111,13 @@ export function DiceGame({ casinoBalance, houseBankroll, pendingRequestId, onDon
         /* transient RPC error — keep polling */
       }
     }
-    setError('Randomness is taking unusually long. Your bet is safe on-chain — refresh to check again.')
+    notify('Randomness is taking unusually long. Your bet is safe on-chain — refresh to check again.', 'warn')
     setPhase('idle')
   }
 
   async function roll() {
     if (wei === null || overMax) return
     if (!ensureSepolia()) return
-    setError(null)
     setSettlement(null)
     setPhase('placing')
     try {
@@ -126,22 +126,24 @@ export function DiceGame({ casinoBalance, houseBankroll, pendingRequestId, onDon
         functionName: 'placeBet',
         args: [wei, rollUnder],
       })
+      // Record the tx hash as soon as it's signed so the "View bet transaction"
+      // link shows during 'placing' too, not only once 'rolling' starts.
+      setSettlement({ result: 0, won: false, payout: 0n, rollUnder, txHash: hash })
       const receipt = await publicClient!.waitForTransactionReceipt({ hash })
       const logs = parseEventLogs({ abi: casinoDiceAbi, logs: receipt.logs, eventName: 'BetPlaced' })
       const requestId = (logs[0]?.args as { requestId?: bigint } | undefined)?.requestId
       if (requestId === undefined) {
-        setError('Bet placed but could not read the request id. Refresh to see the result.')
+        notify('Bet placed but could not read the request id. Refresh to see the result.', 'warn')
         setPhase('idle')
         onDone()
         return
       }
-      setSettlement((s) => (s ? s : { result: 0, won: false, payout: 0n, rollUnder, txHash: hash }))
       setPhase('rolling')
       onDone()
       await pollSettlement(requestId)
     } catch (e) {
       const msg = (e as { shortMessage?: string; message?: string })?.shortMessage ?? 'Bet failed'
-      setError(/reject|denied/i.test(msg) ? 'You rejected the request.' : msg)
+      notify(/reject|denied/i.test(msg) ? 'You rejected the request.' : msg, 'error')
       setPhase('idle')
     }
   }
@@ -255,7 +257,6 @@ export function DiceGame({ casinoBalance, houseBankroll, pendingRequestId, onDon
           </a>
         )}
       </div>
-      {error && <div className="notice warn">⏳ {error}</div>}
     </div>
   )
 }

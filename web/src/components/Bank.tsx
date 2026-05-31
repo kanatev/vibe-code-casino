@@ -21,7 +21,7 @@ export function Bank({ walletBalance, casinoBalance, allowance, onDone, ensureSe
   // peeking at the withdraw tab during a deposit shows a plain Withdraw button,
   // not the deposit's loader. Cleared once mined.
   const [active, setActive] = useState<{ mode: 'deposit' | 'withdraw'; hash?: `0x${string}` } | null>(null)
-  const { run, pending, error } = useAction()
+  const { run, pending } = useAction()
 
   const wei = parse(amount)
   const max = mode === 'deposit' ? walletBalance : casinoBalance
@@ -105,8 +105,6 @@ export function Bank({ walletBalance, casinoBalance, allowance, onDone, ensureSe
           </a>
         )}
       </div>
-
-      {error && <div className="notice error">⚠️ {error}</div>}
     </div>
   )
 }

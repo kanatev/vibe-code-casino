@@ -14,7 +14,7 @@ export function ApproveModal({
   onClose: () => void
   onApproved: () => void
 }) {
-  const { run, pending, error } = useAction()
+  const { run, pending } = useAction()
   if (!open) return null
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -44,7 +44,6 @@ export function ApproveModal({
             'Approve'
           )}
         </button>
-        {error && <div className="notice error">⚠️ {error}</div>}
       </div>
     </div>
   )

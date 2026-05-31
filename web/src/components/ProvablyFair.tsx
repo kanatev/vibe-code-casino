@@ -12,6 +12,7 @@ import {
   explorerAddress,
 } from '../config'
 import { fmt, shortAddr } from '../lib/format'
+import { useToast } from '../hooks/useToast'
 
 type Verified = {
   requestId: bigint
@@ -28,11 +29,10 @@ export function ProvablyFair() {
   const publicClient = usePublicClient()
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [bet, setBet] = useState<Verified | null>(null)
+  const notify = useToast()
 
   async function verify() {
-    setError(null)
     setBet(null)
     const raw = input.trim()
     if (!raw) return
@@ -71,7 +71,7 @@ export function ProvablyFair() {
         result: Number(b[6]),
       })
     } catch (e) {
-      setError((e as Error)?.message ?? 'Could not verify that input.')
+      notify((e as Error)?.message ?? 'Could not verify that input.', 'error')
     } finally {
       setLoading(false)
     }
@@ -128,8 +128,6 @@ payout  = amount × 99 ÷ rollUnder // ${HOUSE_EDGE_BPS / 100}% house edge, bake
             {loading ? <span className="spin" /> : 'Verify'}
           </button>
         </div>
-
-        {error && <div className="notice error">⚠️ {error}</div>}
 
         {bet && (
           <div className="verify-result">

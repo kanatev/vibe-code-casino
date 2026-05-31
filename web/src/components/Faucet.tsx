@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAction } from '../hooks/useAction'
-import { chipContract, TOKEN_SYMBOL } from '../config'
+import { chipContract, TOKEN_SYMBOL, explorerTx } from '../config'
 import { humanizeDuration } from '../lib/format'
 
 type Props = {
@@ -10,8 +10,9 @@ type Props = {
 }
 
 export function Faucet({ cooldown, onDone, ensureSepolia }: Props) {
-  const { run, pending, error } = useAction()
+  const { run, pending } = useAction()
   const onCooldown = cooldown !== undefined && cooldown > 0n
+  const [txHash, setTxHash] = useState<`0x${string}` | null>(null)
   const [infoOpen, setInfoOpen] = useState(false)
   const infoRef = useRef<HTMLSpanElement>(null)
 
@@ -50,7 +51,17 @@ export function Faucet({ cooldown, onDone, ensureSepolia }: Props) {
       <button
         className="btn btn-primary btn-block"
         disabled={pending || onCooldown}
-        onClick={() => ensureSepolia() && run({ ...chipContract, functionName: 'faucet' }, onDone)}
+        onClick={() =>
+          ensureSepolia() &&
+          run(
+            { ...chipContract, functionName: 'faucet' },
+            () => {
+              setTxHash(null)
+              onDone()
+            },
+            (hash) => setTxHash(hash),
+          )
+        }
       >
         {pending ? (
           <span className="row gap-sm" style={{ justifyContent: 'center' }}>
@@ -63,8 +74,6 @@ export function Faucet({ cooldown, onDone, ensureSepolia }: Props) {
         )}
       </button>
 
-      {error && <div className="notice error">⚠️ {error}</div>}
-
       <p className="muted" style={{ fontSize: 12, lineHeight: 1.5, margin: 0 }}>
         Claiming costs a little Sepolia ETH for gas. No ETH yet? Grab some free from a{' '}
         <a href="https://cloud.google.com/application/web3/faucet/ethereum/sepolia" target="_blank" rel="noreferrer">
@@ -76,6 +85,16 @@ export function Faucet({ cooldown, onDone, ensureSepolia }: Props) {
         </a>
         ).
       </p>
+
+      {/* Reserve the link's line at the bottom; shows only while a claim is in
+          flight (18px = one 12px line at body's 1.5). */}
+      <div className="center" style={{ fontSize: 12, minHeight: 18 }}>
+        {pending && txHash && (
+          <a href={explorerTx(txHash)} target="_blank" rel="noreferrer">
+            View transaction ↗
+          </a>
+        )}
+      </div>
     </div>
   )
 }

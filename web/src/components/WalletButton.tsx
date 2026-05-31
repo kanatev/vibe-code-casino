@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useAccount, useConnect, useDisconnect, useSwitchChain } from 'wagmi'
 import { sepolia } from 'wagmi/chains'
 import { shortAddr } from '../lib/format'
+import { useToast } from '../hooks/useToast'
 
 /** Detect an injected EIP-1193 provider (MetaMask et al). MetaMask injects
  *  `window.ethereum` at document-start; we re-check shortly after mount in case
@@ -36,10 +37,18 @@ export function WalletButton({ onInstall }: { onInstall: () => void }) {
   const { disconnect } = useDisconnect()
   const { switchChain, isPending: switching } = useSwitchChain()
   const hasWallet = useInjectedPresent()
+  const notify = useToast()
 
   const [menuOpen, setMenuOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+
+  // Surface connection failures as a toast instead of an inline line that would
+  // shift the header/landing layout.
+  useEffect(() => {
+    if (!error) return
+    notify(/reject|denied/i.test(error.message) ? 'Connection rejected.' : 'Connection failed.', 'error')
+  }, [error, notify])
 
   // Close the account menu on outside click.
   useEffect(() => {
@@ -85,11 +94,6 @@ export function WalletButton({ onInstall }: { onInstall: () => void }) {
             'Connect wallet'
           )}
         </button>
-        {error && (
-          <span className="muted" style={{ fontSize: 11, maxWidth: 220, textAlign: 'right' }}>
-            {/reject|denied/i.test(error.message) ? 'Connection rejected.' : 'Connection failed.'}
-          </span>
-        )}
       </div>
     )
   }
