@@ -24,33 +24,36 @@ export default function App() {
   const casino = useCasino()
   const openInstall = () => setInstallOpen(true)
 
-  // Collapse the header into "compact" mode (In casino / In wallet move into the
-  // wallet dropdown) the moment the one-line layout would overflow. A fixed CSS
-  // breakpoint can't do this reliably because the chips' width depends on the
-  // balance amounts, so we watch the actual overflow instead. `breakWidth`
-  // records the width at which it last broke, giving hysteresis so it doesn't
-  // flicker back and forth right at the threshold.
-  const [compact, setCompact] = useState(false)
+  // Progressively compact the header the moment the one-line layout would
+  // overflow. A fixed CSS breakpoint can't do this reliably (the chips' width
+  // depends on the balance amounts), so we watch the actual overflow instead and
+  // step through levels:
+  //   0 — everything inline
+  //   1 — In casino / In wallet move into the wallet dropdown
+  //   2 — the "Sepolia testnet" tag shrinks and drops under "Vibe Casino"
+  // `breaks[L]` records the width at which we escalated from level L, giving
+  // hysteresis so it doesn't flicker back and forth at a threshold.
+  const MAX_LEVEL = 2
+  const [level, setLevel] = useState(0)
   const topbarRef = useRef<HTMLElement>(null)
-  const breakWidth = useRef(Number.POSITIVE_INFINITY)
+  const breaks = useRef<number[]>([])
   useLayoutEffect(() => {
     const el = topbarRef.current
     if (!el) return
     const measure = () => {
-      if (!compact) {
-        if (el.scrollWidth > el.clientWidth + 1) {
-          breakWidth.current = el.clientWidth
-          setCompact(true)
-        }
-      } else if (el.clientWidth > breakWidth.current + 24) {
-        setCompact(false)
+      const w = el.clientWidth
+      if (el.scrollWidth > w + 1 && level < MAX_LEVEL) {
+        breaks.current[level] = w
+        setLevel(level + 1)
+      } else if (level > 0 && w > (breaks.current[level - 1] ?? 0) + 24) {
+        setLevel(level - 1)
       }
     }
     measure()
     const ro = new ResizeObserver(measure)
     ro.observe(el)
     return () => ro.disconnect()
-  }, [compact, isConnected, casino.casinoBalance, casino.walletBalance])
+  }, [level, isConnected, casino.casinoBalance, casino.walletBalance])
 
   // The MetaMask extension does not inject into an already-open tab, so after the
   // user installs it and returns, reload once to pick up window.ethereum.
@@ -84,11 +87,16 @@ export default function App() {
         onClose={() => setApproveOpen(false)}
         onApproved={casino.refetch}
       />
-      <header ref={topbarRef} className={`topbar ${compact ? 'is-compact' : ''}`}>
+      <header
+        ref={topbarRef}
+        className={`topbar ${level >= 1 ? 'is-compact' : ''} ${level >= 2 ? 'is-tight' : ''}`}
+      >
         <div className="brand">
           <span className="logo">🎲</span>
-          Vibe Casino
-          <span className="tag">Sepolia testnet</span>
+          <span className="brand-text">
+            Vibe Casino
+            <span className="tag">Sepolia testnet</span>
+          </span>
         </div>
 
         <div className="row gap">

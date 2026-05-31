@@ -108,6 +108,11 @@ input {
   white-space: nowrap;
   flex-shrink: 0;
 }
+.brand-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
 .brand .logo {
   width: 38px;
   height: 38px;
@@ -797,10 +802,27 @@ input {
 .modal-close:hover { color: var(--text-h); }
 
 /* ---------- responsive header ---------- */
-/* When the header no longer fits on one line, App adds `.is-compact` (driven by
-   a ResizeObserver, not a fixed breakpoint, since the chips' width depends on
-   the balance amounts). In that mode the inline In casino / In wallet chips are
-   hidden and their values appear inside the wallet dropdown instead. The brand
-   and the wallet button always keep their places. */
+/* App toggles these classes from a ResizeObserver (not a fixed breakpoint, since
+   the chips' width depends on the balance amounts) as the header stops fitting
+   on one line.
+   .is-compact — move the In casino / In wallet chips into the wallet dropdown.
+   .is-tight   — on top of that, halve the "Sepolia testnet" tag and drop it
+                 under "Vibe Casino" so the brand stops bumping the wallet. */
 .topbar.is-compact .balances { display: none; }
 .topbar.is-compact .wallet-balances { display: flex; }
+.topbar.is-tight .brand-text {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+.topbar.is-tight .brand .tag {
+  font-size: 6px;
+  letter-spacing: 0.07em;
+  padding: 1px 4px;
+}
+
+/* On phones, drop the redundant pre-login wallet CTA from the header — the hero
+   already shows a Connect/Install button. */
+@media (max-width: 640px) {
+  .topbar .wallet-cta { display: none; }
+}

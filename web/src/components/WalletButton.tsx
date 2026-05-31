@@ -70,7 +70,7 @@ export function WalletButton({ onInstall, casinoBalance, walletBalance }: Props)
   // --- No wallet installed ---
   if (!isConnected && !hasWallet) {
     return (
-      <button className="btn btn-primary" onClick={onInstall}>
+      <button className="btn btn-primary wallet-cta" onClick={onInstall}>
         Install Wallet
       </button>
     )
@@ -80,7 +80,7 @@ export function WalletButton({ onInstall, casinoBalance, walletBalance }: Props)
   if (!isConnected) {
     const connector = connectors.find((c) => c.type === 'injected') ?? connectors[0]
     return (
-      <div className="col" style={{ alignItems: 'flex-end', gap: 4 }}>
+      <div className="col wallet-cta" style={{ alignItems: 'flex-end', gap: 4 }}>
         <button
           className="btn btn-primary"
           disabled={isPending || !connector}
