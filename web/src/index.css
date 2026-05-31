@@ -83,7 +83,7 @@ input {
 .app {
   max-width: 1080px;
   margin: 0 auto;
-  padding: 0 20px 80px;
+  padding: 0 20px 18px;
 }
 
 .topbar {
@@ -636,7 +636,7 @@ input {
 
 /* ---------- footer ---------- */
 .footer {
-  margin-top: 36px;
+  margin-top: 18px;
   text-align: center;
   font-size: 13px;
   color: var(--text-dim);

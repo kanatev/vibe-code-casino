@@ -150,6 +150,17 @@ export function DiceGame({ casinoBalance, houseBankroll, pendingRequestId, onDon
     }
   }
 
+  // Once a roll has settled, the result stays on screen until the next bet. As
+  // soon as the user starts setting up a new bet (moves the slider or edits the
+  // amount), drop the old result back to the idle "Place your bet." state.
+  function clearSettledResult(displayTo: number) {
+    if (phase === 'won' || phase === 'lost') {
+      setPhase('idle')
+      setSettlement(null)
+      setDisplay(displayTo)
+    }
+  }
+
   const tileClass =
     phase === 'won' ? 'mint' : phase === 'lost' ? 'red' : busy ? 'gold' : 'neutral'
 
@@ -214,7 +225,11 @@ export function DiceGame({ casinoBalance, houseBankroll, pendingRequestId, onDon
           max={MAX_ROLL_UNDER}
           value={rollUnder}
           disabled={busy}
-          onChange={(e) => setRollUnder(Number(e.target.value))}
+          onChange={(e) => {
+            const v = Number(e.target.value)
+            setRollUnder(v)
+            clearSettledResult(v)
+          }}
           className="slider"
           style={{
             background: `linear-gradient(90deg, var(--mint) 0%, var(--mint) ${
@@ -238,7 +253,16 @@ export function DiceGame({ casinoBalance, houseBankroll, pendingRequestId, onDon
         </div>
       </div>
 
-      <AmountInput label="Bet amount" value={amount} onChange={setAmount} max={maxBet} disabled={busy} />
+      <AmountInput
+        label="Bet amount"
+        value={amount}
+        onChange={(v) => {
+          setAmount(v)
+          clearSettledResult(rollUnder)
+        }}
+        max={maxBet}
+        disabled={busy}
+      />
 
       <button className="btn btn-primary btn-block btn-lg" disabled={busy || wei === null || wei === 0n || overMax} onClick={roll}>
         {phase === 'placing' ? (
